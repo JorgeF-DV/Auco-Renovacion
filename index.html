@@ -579,6 +579,8 @@
       <div class="srow"><span class="slabel">Inicio de Contrato</span><span class="sval" id="r_inicio"></span></div>
       <div class="srow"><span class="slabel">Tiempo Transcurrido</span><span class="sval" id="r_meses"></span></div>
       <div class="srow"><span class="slabel">Créditos Adquiridos</span><span class="sval" id="r_creditos"></span></div>
+      <div class="srow"><span class="slabel">Tarifa anterior / crédito</span><span class="sval" id="r_tarifaAntUnit">—</span></div>
+      <div class="srow"><span class="slabel">Valor total compra anterior</span><span class="sval" id="r_valorTotalAnt">—</span></div>
     </div>
     <div class="card fu fu4">
       <div class="card-ttl">💳 Estado de Cuenta Actual</div>
@@ -932,6 +934,10 @@ function generateReport() {
   document.getElementById('r_inicio').textContent   = fmtDateES(fecha + 'T12:00:00');
   document.getElementById('r_meses').textContent    = `~${meses.toFixed(1)} meses`;
   document.getElementById('r_creditos').textContent = fmtN(creditos);
+  const tarifaAntCOP  = baseUSDForm ? baseUSDForm * S.trm : null;
+  const valorTotalAnt = tarifaAntCOP ? creditos * tarifaAntCOP : null;
+  document.getElementById('r_tarifaAntUnit').textContent  = tarifaAntCOP  ? $COP(tarifaAntCOP)  : '—';
+  document.getElementById('r_valorTotalAnt').textContent  = valorTotalAnt ? $COP(valorTotalAnt) : '—';
 
   // Estado
   document.getElementById('r_consumo').textContent  = fmtN(consumo);
