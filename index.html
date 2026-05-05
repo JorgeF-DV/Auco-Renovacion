@@ -551,12 +551,12 @@
     <!-- PREVIEW -->
     <div id="formPreview" class="pp" style="display:none">
       <div class="fg">
-        <label>Precio Final (USD)</label>
-        <div class="pp-val" id="fpUSD">—</div>
+        <label>Valor anterior</label>
+        <div class="pp-val" id="fpBase">—</div>
       </div>
       <div class="fg">
-        <label>Precio Final (COP)</label>
-        <div class="pp-val" id="fpCOP">—</div>
+        <label>Valor con incremento</label>
+        <div class="pp-val" id="fpFinal">—</div>
       </div>
     </div>
 
@@ -882,10 +882,10 @@ function updateFormPreview() {
   } else {
     document.getElementById('formPreview').style.display = 'none'; return;
   }
-  const finalUSD = baseUSD * (1 + incr / 100);
-  const finalCOP = finalUSD * S.trm;
-  document.getElementById('fpUSD').textContent = $USD(finalUSD);
-  document.getElementById('fpCOP').textContent = $COP(finalCOP);
+  const baseCOP  = baseUSD * S.trm;
+  const finalCOP = baseCOP * (1 + incr / 100);
+  document.getElementById('fpBase').textContent  = $COP(baseCOP);
+  document.getElementById('fpFinal').textContent = $COP(finalCOP);
   document.getElementById('formPreview').style.display = 'grid';
 }
 
