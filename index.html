@@ -336,16 +336,11 @@
     .price-col-usd { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--g800); }
     .price-col-cop { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--g500); margin-top: 2px; }
     .arr-badge {
-      background: var(--blue-lt); border: 2px solid var(--blue-bd);
-      border-radius: var(--r); padding: 10px 14px;
-      font-weight: 700; color: var(--blue);
-      text-align: center; display: flex; flex-direction: column;
-      gap: 3px; align-items: center; min-width: 96px;
+      background: var(--blue-lt); border: 1px solid var(--blue-bd);
+      border-radius: var(--r-sm); padding: 5px 10px;
+      font-size: 12px; font-weight: 700; color: var(--blue);
+      text-align: center; white-space: nowrap;
     }
-    .arr-pct { font-size: 18px; font-weight: 800; line-height: 1; }
-    .arr-cop { font-size: 11px; font-weight: 600; opacity: .85; white-space: nowrap; }
-    .arr-badge.has-ant { background: var(--amber-lt); border-color: #FCD34D; color: var(--amber); }
-    .arr-badge.inc-high { background: var(--red-lt); border-color: var(--red-bd); color: var(--red); }
 
     /* ── PRICE DISPLAY: COP-only by default, USD optional ── */
     /* Default: COP is the primary price shown large */
@@ -491,7 +486,7 @@
     <div class="fsec">💼 Propuesta Comercial</div>
     <div class="fgrid">
       <div class="fg">
-        <label>Tarifa Base</label>
+        <label>Tarifa Anterior</label>
         <select id="f_tarifa" class="fc" onchange="onFormTarifaChange()">
           <option value="">— Auto-detectar al generar —</option>
           <option value="1.20">50 – 199 créditos · $1.20 USD</option>
@@ -520,13 +515,6 @@
         <div class="input-wrap">
           <input type="number" id="f_tarifaEspecialCOP" class="fc mono" placeholder="ej. 3500" oninput="updateFormPreview()">
           <span class="input-tag">COP</span>
-        </div>
-      </div>
-      <div class="fg span-2">
-        <label>Tarifa Anterior del cliente <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400)">— precio que pagó (COP / crédito)</span></label>
-        <div class="input-wrap">
-          <input type="number" id="f_tarifaAnteriorCOP" class="fc mono" placeholder="ej. 3 024  (opcional)" oninput="updateFormPreview()">
-          <span class="input-tag">COP/cr.</span>
         </div>
       </div>
     </div>
@@ -630,18 +618,9 @@
     <div class="prop-ttl">💼 Propuesta Comercial</div>
 
     <div class="no-print" id="tarifaCtrl">
-      <div style="margin-bottom:12px;">
-        <div class="fg">
-          <label>Tarifa Anterior del cliente <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400)">— COP / crédito</span></label>
-          <div class="input-wrap">
-            <input type="number" id="r_anteriorCOP" class="fc mono" placeholder="ej. 3 024  (opcional)" oninput="updateProposal()">
-            <span class="input-tag">COP/cr.</span>
-          </div>
-        </div>
-      </div>
       <div class="tarifa-ctrl" id="tarifaCtrlGrid">
         <div class="fg">
-          <label>Tarifa Base</label>
+          <label>Tarifa Anterior</label>
           <select id="r_tarifaSel" class="fc" onchange="onRTarifaChange()">
             <option value="1.20">50 – 199 · $1.20 USD</option>
             <option value="1.00">200 – 499 · $1.00 USD</option>
@@ -677,13 +656,13 @@
     <div id="proposalDisplay">
       <div class="price-row">
         <div>
-          <div class="price-col-lbl" id="r_leftLbl">Tarifa Base</div>
+          <div class="price-col-lbl">Tarifa Anterior</div>
           <div class="price-col-usd" id="r_baseUSD">—</div>
           <div class="price-col-cop" id="r_baseCOP">—</div>
         </div>
         <div class="arr-badge" id="r_arrBadge">+0%</div>
         <div>
-          <div class="price-col-lbl">Precio Unitario Final</div>
+          <div class="price-col-lbl">Tarifa + Incremento</div>
           <div class="price-col-usd" id="r_finalUSD">—</div>
           <div class="price-col-cop" id="r_finalCOP">—</div>
         </div>
@@ -961,11 +940,6 @@ function generateReport() {
   // Incremento
   document.getElementById('r_incr').value = incrForm;
 
-  // Tarifa anterior
-  const anteriorCOP = parseFloat(document.getElementById('f_tarifaAnteriorCOP').value) || 0;
-  S.fd.anteriorCOP = anteriorCOP;
-  document.getElementById('r_anteriorCOP').value = anteriorCOP || '';
-
   // Tarifa en reporte
   const rSel = document.getElementById('r_tarifaSel');
   if (especCOP) {
@@ -1033,37 +1007,17 @@ function getRBaseUSD() {
 }
 
 function updateProposal() {
-  const bolsa       = parseFloat(document.getElementById('r_bolsaInput').value) || 0;
-  const incr        = parseFloat(document.getElementById('r_incr').value) || 0;
-  const baseUSD     = getRBaseUSD();
-  const trm         = S.trm || 1;
-  const baseCOP     = baseUSD * trm;
-  const finalUSD    = baseUSD * (1 + incr / 100);
-  const finalCOP    = baseCOP * (1 + incr / 100);
-  const anteriorCOP = parseFloat(document.getElementById('r_anteriorCOP').value) || 0;
-  const anteriorUSD = anteriorCOP / trm;
+  const bolsa    = parseFloat(document.getElementById('r_bolsaInput').value) || 0;
+  const incr     = parseFloat(document.getElementById('r_incr').value) || 0;
+  const baseUSD  = getRBaseUSD();
+  const trm      = S.trm || 1;
+  const baseCOP  = baseUSD * trm;
+  const finalUSD = baseUSD * (1 + incr / 100);
+  const finalCOP = baseCOP * (1 + incr / 100);
 
-  const badge    = document.getElementById('r_arrBadge');
-  const leftLbl  = document.getElementById('r_leftLbl');
-
-  if (anteriorCOP > 0) {
-    const deltaPct = ((finalCOP - anteriorCOP) / anteriorCOP) * 100;
-    const deltaCOP = finalCOP - anteriorCOP;
-    const sign     = deltaCOP >= 0 ? '+' : '';
-    badge.innerHTML = `<span class="arr-pct">${sign}${deltaPct.toFixed(1)}%</span>`
-                    + `<span class="arr-cop">${sign}${fmtCOP(deltaCOP)} COP/cr.</span>`;
-    badge.className = 'arr-badge has-ant' + (deltaPct > 10 ? ' inc-high' : '');
-    leftLbl.textContent = 'Tarifa Anterior';
-    document.getElementById('r_baseUSD').textContent = $USD(anteriorUSD);
-    document.getElementById('r_baseCOP').textContent = $COP(anteriorCOP);
-  } else {
-    badge.innerHTML = `<span class="arr-pct">+${incr}%</span>`;
-    badge.className = 'arr-badge';
-    leftLbl.textContent = 'Tarifa Base';
-    document.getElementById('r_baseUSD').textContent = $USD(baseUSD);
-    document.getElementById('r_baseCOP').textContent = $COP(baseCOP);
-  }
-
+  document.getElementById('r_baseUSD').textContent  = $USD(baseUSD);
+  document.getElementById('r_baseCOP').textContent  = $COP(baseCOP);
+  document.getElementById('r_arrBadge').textContent = '+' + incr + '%';
   document.getElementById('r_finalUSD').textContent = $USD(finalUSD);
   document.getElementById('r_finalCOP').textContent = $COP(finalCOP);
   document.getElementById('r_totUSD').textContent   = $USD(bolsa * finalUSD);
