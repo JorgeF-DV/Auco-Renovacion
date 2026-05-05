@@ -233,7 +233,7 @@
       overflow: hidden; position: relative; z-index: 1;
     }
     .c-avatar.has-logo { background: transparent; }
-    .c-avatar img { width: 100%; height: 100%; object-fit: contain; }
+    .c-avatar img { max-width: 100%; max-height: 100%; width: auto; height: auto; }
     .c-info { position: relative; z-index: 1; }
     .c-info h1  { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
     .c-info p   { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.55);
@@ -484,12 +484,16 @@
     <div class="fsec">📊 Datos de Consumo</div>
     <div class="fgrid">
       <div class="fg">
-        <label>Total Créditos Comprados *</label>
+        <label>Créditos Adquiridos *</label>
         <input type="number" id="f_creditos" class="fc mono" placeholder="ej. 20000" min="0">
       </div>
       <div class="fg">
         <label>Consumo Total a la Fecha *</label>
         <input type="number" id="f_consumo" class="fc mono" placeholder="ej. 14500" min="0">
+      </div>
+      <div class="fg span-2">
+        <label>Créditos Remanentes <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400)">— saldo de bolsa anterior (0 si no hay)</span></label>
+        <input type="number" id="f_remanentes" class="fc mono" placeholder="0" value="0" min="0">
       </div>
     </div>
 
@@ -598,6 +602,8 @@
       <div class="srow"><span class="slabel">Inicio de Contrato</span><span class="sval" id="r_inicio"></span></div>
       <div class="srow"><span class="slabel">Tiempo Transcurrido</span><span class="sval" id="r_meses"></span></div>
       <div class="srow"><span class="slabel">Créditos Adquiridos</span><span class="sval" id="r_creditos"></span></div>
+      <div class="srow" id="r_remRow" style="display:none"><span class="slabel">Créditos Remanentes</span><span class="sval" id="r_remanentes">—</span></div>
+      <div class="srow" id="r_totRow" style="display:none"><span class="slabel">Créditos Totales</span><span class="sval" id="r_creditosTotales">—</span></div>
       <div class="srow"><span class="slabel">Tarifa anterior / crédito</span><span class="sval" id="r_tarifaAntUnit">—</span></div>
       <div class="srow"><span class="slabel">Valor total compra anterior</span><span class="sval" id="r_valorTotalAnt">—</span></div>
     </div>
@@ -711,9 +717,12 @@
           <div class="tot-lbl">Inversión Total USD</div>
           <div class="tot-val" id="r_totUSD">—</div>
         </div>
-        <div>
-          <div class="tot-lbl">Inversión Total COP</div>
-          <div class="tot-val" id="r_totCOP">—</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div>
+            <div class="tot-lbl">Inversión Total COP</div>
+            <div class="tot-val" id="r_totCOP">—</div>
+          </div>
+          <img src="1234_removebg_preview-1.png" alt="Auco" style="height:30px; width:auto; opacity:.75; filter:brightness(0) invert(1); flex-shrink:0;">
         </div>
       </div>
     </div>
@@ -905,13 +914,16 @@ function generateReport() {
     alert('Necesitamos la TRM para continuar. Ingrésala manualmente.'); return;
   }
 
+  const remanentes      = parseFloat(document.getElementById('f_remanentes').value) || 0;
+  const creditosTotales = creditos + remanentes;
+
   const hoy       = new Date();
   const meses     = monthsDiff(fecha, hoy);
   const cMensual  = consumo / meses;
-  const saldo     = creditos - consumo;
-  const usoPct    = Math.min(100, (consumo / creditos) * 100);
+  const saldo     = creditosTotales - consumo;
+  const usoPct    = Math.min(100, (consumo / creditosTotales) * 100);
 
-  const mesesPaq  = Math.floor(creditos / cMensual);
+  const mesesPaq  = Math.floor(creditosTotales / cMensual);
   const bolsa     = Math.round(cMensual * mesesPaq);
   S.bolsaSugerida = bolsa;
 
@@ -932,8 +944,9 @@ function generateReport() {
     baseUSDForm = det ? det.usd : null;
   }
 
-  S.fd = { cliente, fecha, creditos, consumo, meses, cMensual, saldo, usoPct,
-            bolsa, fechaAgot, incrForm, baseUSDForm, especCOP };
+  S.fd = { cliente, fecha, creditos, remanentes, creditosTotales, consumo,
+            meses, cMensual, saldo, usoPct, bolsa, fechaAgot,
+            incrForm, baseUSDForm, especCOP };
 
   // ── POPULATE ──
   const hoyStr = hoy.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
@@ -952,11 +965,20 @@ function generateReport() {
   document.getElementById('r_nombre').textContent = cliente;
 
   // Contrato
-  document.getElementById('r_inicio').textContent   = fmtDateES(fecha + 'T12:00:00');
-  document.getElementById('r_meses').textContent    = `~${meses.toFixed(1)} meses`;
-  document.getElementById('r_creditos').textContent = fmtN(creditos);
+  document.getElementById('r_inicio').textContent         = fmtDateES(fecha + 'T12:00:00');
+  document.getElementById('r_meses').textContent          = `~${meses.toFixed(1)} meses`;
+  document.getElementById('r_creditos').textContent       = fmtN(creditos);
+  if (remanentes > 0) {
+    document.getElementById('r_remanentes').textContent   = fmtN(remanentes);
+    document.getElementById('r_creditosTotales').textContent = fmtN(creditosTotales);
+    document.getElementById('r_remRow').style.display    = '';
+    document.getElementById('r_totRow').style.display    = '';
+  } else {
+    document.getElementById('r_remRow').style.display    = 'none';
+    document.getElementById('r_totRow').style.display    = 'none';
+  }
   const tarifaAntCOP  = baseUSDForm ? baseUSDForm * S.trm : null;
-  const valorTotalAnt = tarifaAntCOP ? creditos * tarifaAntCOP : null;
+  const valorTotalAnt = tarifaAntCOP ? creditos * tarifaAntCOP : null;  // solo adquiridos
   document.getElementById('r_tarifaAntUnit').textContent  = tarifaAntCOP  ? $COP(tarifaAntCOP)  : '—';
   document.getElementById('r_valorTotalAnt').textContent  = valorTotalAnt ? $COP(valorTotalAnt) : '—';
 
