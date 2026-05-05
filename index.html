@@ -309,6 +309,16 @@
       transition: background .15s; font-family: 'Outfit', sans-serif;
     }
     .btn-sug:hover { background: rgba(255,255,255,.32); }
+    .meses-row { display: flex; gap: 6px; margin-bottom: 14px; }
+    .btn-mes {
+      flex: 1; padding: 7px 0;
+      background: rgba(255,255,255,.12); color: rgba(255,255,255,.70);
+      border: 1.5px solid rgba(255,255,255,.22); border-radius: var(--r-sm);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: 'Outfit', sans-serif; transition: all .15s; text-align: center;
+    }
+    .btn-mes:hover { background: rgba(255,255,255,.25); color: #fff; }
+    .btn-mes.active { background: rgba(255,255,255,.28); color: #fff; border-color: rgba(255,255,255,.65); }
 
     /* Proposal */
     .prop-card {
@@ -596,7 +606,12 @@
     </div>
     <div class="card ren-card fu fu6">
       <div class="card-ttl">🔄 Proyección de Renovación</div>
-      <div class="ren-lbl">Bolsa sugerida según ritmo de consumo</div>
+      <div class="meses-row no-print">
+        <button class="btn-mes" data-m="12" onclick="setMesesRen(12)">12 meses</button>
+        <button class="btn-mes" data-m="11" onclick="setMesesRen(11)">11 meses</button>
+        <button class="btn-mes" data-m="10" onclick="setMesesRen(10)">10 meses</button>
+      </div>
+      <div class="ren-lbl" id="r_renLbl">Bolsa sugerida según ritmo de consumo</div>
       <div class="ren-num" id="r_bolsaNum"></div>
       <div class="ren-unit">créditos</div>
       <div class="bolsa-ed no-print">
@@ -693,6 +708,7 @@ let S = {
   trm: null,
   logoURL: null,
   bolsaSugerida: 0,
+  mesesRen: null,
   fd: {}
 };
 
@@ -971,8 +987,30 @@ function applyBolsa() {
 
 function onBolsaChange() {
   const bolsa = parseFloat(document.getElementById('r_bolsaInput').value) || 0;
+  document.getElementById('r_bolsaNum').textContent    = fmtN(bolsa);
   document.getElementById('r_bolsaPDFNum').textContent = fmtN(bolsa);
-  const sel   = document.getElementById('r_tarifaSel');
+  document.querySelectorAll('.btn-mes').forEach(b => b.classList.remove('active'));
+  const sel = document.getElementById('r_tarifaSel');
+  if (sel.value !== 'especial') {
+    const det = detectTarifa(bolsa);
+    if (det) {
+      const opt = Array.from(sel.options).find(o => parseFloat(o.value) === det.usd);
+      if (opt) sel.value = opt.value;
+    }
+  }
+  updateProposal();
+}
+
+function setMesesRen(n) {
+  S.mesesRen = n;
+  const bolsa = Math.round(S.fd.cMensual * n);
+  document.getElementById('r_bolsaNum').textContent    = fmtN(bolsa);
+  document.getElementById('r_bolsaInput').value        = bolsa;
+  document.getElementById('r_bolsaPDFNum').textContent = fmtN(bolsa);
+  document.getElementById('r_renLbl').textContent      = `Bolsa para ${n} meses según ritmo de consumo`;
+  document.querySelectorAll('.btn-mes').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.btn-mes[data-m="${n}"]`).classList.add('active');
+  const sel = document.getElementById('r_tarifaSel');
   if (sel.value !== 'especial') {
     const det = detectTarifa(bolsa);
     if (det) {
