@@ -437,6 +437,11 @@
   <div class="hdr-sep"></div>
   <span class="hdr-ttl">Estratega de Renovaciones</span>
   <div class="hdr-acts no-print" id="hdrActs" style="display:none">
+    <label class="usd-toggle" title="Mostrar/ocultar valor total de compra anterior">
+      <input type="checkbox" id="showValorAnt" checked onchange="applyValorAntToggle()">
+      <span class="tog-track"><span class="tog-thumb"></span></span>
+      <span class="tog-lbl">Valor compra ant.</span>
+    </label>
     <label class="usd-toggle" title="Mostrar/ocultar precios en USD en el reporte">
       <input type="checkbox" id="showUSD" onchange="applyUSDToggle()">
       <span class="tog-track"><span class="tog-thumb"></span></span>
@@ -605,7 +610,7 @@
       <div class="srow" id="r_remRow" style="display:none"><span class="slabel">Créditos Remanentes</span><span class="sval" id="r_remanentes">—</span></div>
       <div class="srow" id="r_totRow" style="display:none"><span class="slabel">Créditos Totales</span><span class="sval" id="r_creditosTotales">—</span></div>
       <div class="srow"><span class="slabel">Tarifa anterior / crédito</span><span class="sval" id="r_tarifaAntUnit">—</span></div>
-      <div class="srow"><span class="slabel">Valor total compra anterior</span><span class="sval" id="r_valorTotalAnt">—</span></div>
+      <div class="srow" id="r_valorTotalAntRow"><span class="slabel">Valor total compra anterior</span><span class="sval" id="r_valorTotalAnt">—</span></div>
     </div>
     <div class="card fu fu4">
       <div class="card-ttl">💳 Estado de Cuenta Actual</div>
@@ -1108,6 +1113,11 @@ function updateProposal() {
 function applyUSDToggle() {
   const show = document.getElementById('showUSD').checked;
   document.getElementById('proposalDisplay').classList.toggle('show-usd', show);
+}
+
+function applyValorAntToggle() {
+  const show = document.getElementById('showValorAnt').checked;
+  document.getElementById('r_valorTotalAntRow').style.display = show ? '' : 'none';
 }
 
 /* ══════════════════════════════════════════
