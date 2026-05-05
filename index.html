@@ -345,12 +345,31 @@
                      letter-spacing: .5px; color: var(--g500); margin-bottom: 5px; }
     .price-col-usd { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--g800); }
     .price-col-cop { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--g500); margin-top: 2px; }
-    .arr-badge {
-      background: var(--blue-lt); border: 1px solid var(--blue-bd);
-      border-radius: var(--r-sm); padding: 5px 10px;
-      font-size: 12px; font-weight: 700; color: var(--blue);
-      text-align: center; white-space: nowrap;
+    /* Proposal summary (replaces price-row) */
+    .prop-summary {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      margin-bottom: 18px; border-radius: var(--r);
+      overflow: hidden; border: 1px solid var(--g200);
     }
+    .prop-sum-item {
+      padding: 18px 14px; background: var(--g50); text-align: center;
+    }
+    .prop-sum-item:not(:last-child) { border-right: 1px solid var(--g200); }
+    .prop-sum-lbl {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--g400); margin-bottom: 8px;
+    }
+    .prop-sum-val {
+      font-size: 22px; font-weight: 800;
+      font-family: 'DM Mono', monospace; color: var(--navy); line-height: 1;
+    }
+    .prop-sum-sub {
+      font-size: 11.5px; font-family: 'DM Mono', monospace;
+      color: var(--g500); margin-top: 5px;
+    }
+    .prop-sum-item.accent { background: var(--blue-lt); }
+    .prop-sum-item.accent .prop-sum-lbl { color: var(--blue); }
+    .prop-sum-item.accent .prop-sum-val { color: var(--blue); font-size: 28px; }
 
     /* ── PRICE DISPLAY: COP-only by default, USD optional ── */
     /* Default: COP is the primary price shown large */
@@ -671,17 +690,19 @@
     </div>
 
     <div id="proposalDisplay">
-      <div class="price-row">
-        <div>
-          <div class="price-col-lbl">Tarifa Anterior</div>
-          <div class="price-col-usd" id="r_baseUSD">—</div>
-          <div class="price-col-cop" id="r_baseCOP">—</div>
+      <div class="prop-summary">
+        <div class="prop-sum-item">
+          <div class="prop-sum-lbl">Créditos a comprar</div>
+          <div class="prop-sum-val" id="r_sumCreditos">—</div>
         </div>
-        <div class="arr-badge" id="r_arrBadge">+0%</div>
-        <div>
-          <div class="price-col-lbl">Tarifa + Incremento</div>
-          <div class="price-col-usd" id="r_finalUSD">—</div>
-          <div class="price-col-cop" id="r_finalCOP">—</div>
+        <div class="prop-sum-item">
+          <div class="prop-sum-lbl">Tarifa / crédito</div>
+          <div class="prop-sum-val" id="r_sumTarifaCOP">—</div>
+          <div class="prop-sum-sub" id="r_sumTarifaUSD" style="display:none">—</div>
+        </div>
+        <div class="prop-sum-item accent">
+          <div class="prop-sum-lbl">Incremento</div>
+          <div class="prop-sum-val" id="r_sumIncr">+0%</div>
         </div>
       </div>
 
@@ -1055,17 +1076,15 @@ function updateProposal() {
   const incr     = parseFloat(document.getElementById('r_incr').value) || 0;
   const baseUSD  = getRBaseUSD();
   const trm      = S.trm || 1;
-  const baseCOP  = baseUSD * trm;
   const finalUSD = baseUSD * (1 + incr / 100);
-  const finalCOP = baseCOP * (1 + incr / 100);
+  const finalCOP = baseUSD * trm * (1 + incr / 100);
 
-  document.getElementById('r_baseUSD').textContent  = $USD(baseUSD);
-  document.getElementById('r_baseCOP').textContent  = $COP(baseCOP);
-  document.getElementById('r_arrBadge').textContent = '+' + incr + '%';
-  document.getElementById('r_finalUSD').textContent = $USD(finalUSD);
-  document.getElementById('r_finalCOP').textContent = $COP(finalCOP);
-  document.getElementById('r_totUSD').textContent   = $USD(bolsa * finalUSD);
-  document.getElementById('r_totCOP').textContent   = $COP(bolsa * finalCOP);
+  document.getElementById('r_sumCreditos').textContent  = fmtN(bolsa);
+  document.getElementById('r_sumTarifaCOP').textContent = $COP(finalCOP);
+  document.getElementById('r_sumTarifaUSD').textContent = $USD(finalUSD);
+  document.getElementById('r_sumIncr').textContent      = '+' + incr + '%';
+  document.getElementById('r_totUSD').textContent       = $USD(bolsa * finalUSD);
+  document.getElementById('r_totCOP').textContent       = $COP(bolsa * finalCOP);
 }
 
 /* ══════════════════════════════════════════
@@ -1074,6 +1093,7 @@ function updateProposal() {
 function applyUSDToggle() {
   const show = document.getElementById('showUSD').checked;
   document.getElementById('proposalDisplay').classList.toggle('show-usd', show);
+  document.getElementById('r_sumTarifaUSD').style.display = show ? 'block' : 'none';
 }
 
 /* ══════════════════════════════════════════
