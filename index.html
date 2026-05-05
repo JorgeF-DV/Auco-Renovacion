@@ -696,20 +696,12 @@
     </div>
 
     <div id="proposalDisplay">
-      <div class="prop-summary">
-        <div class="prop-sum-item">
-          <div class="prop-sum-lbl">Créditos a comprar</div>
-          <div class="prop-sum-val" id="r_sumCreditos">—</div>
-        </div>
-        <div class="prop-sum-item">
-          <div class="prop-sum-lbl">Tarifa / crédito</div>
-          <div class="prop-sum-val" id="r_sumTarifaCOP">—</div>
-          <div class="prop-sum-sub" id="r_sumTarifaUSD" style="display:none">—</div>
-        </div>
-        <div class="prop-sum-item accent">
-          <div class="prop-sum-lbl">Incremento</div>
-          <div class="prop-sum-val" id="r_sumIncr">+0%</div>
-        </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-ttl">📦 Nueva Compra</div>
+        <div class="srow"><span class="slabel">Créditos a Comprar</span><span class="sval" id="r_ncCreditos">—</span></div>
+        <div class="srow"><span class="slabel">Tarifa Anterior / crédito</span><span class="sval" id="r_ncTarifaAnt">—</span></div>
+        <div class="srow"><span class="slabel">Incremento Aplicado</span><span class="sval" id="r_ncIncr" style="color:var(--blue)">—</span></div>
+        <div class="srow"><span class="slabel">Tarifa con Incremento / crédito</span><span class="sval" id="r_ncTarifaFinal">—</span></div>
       </div>
 
       <div class="total-box">
@@ -1098,15 +1090,16 @@ function updateProposal() {
   const incr     = parseFloat(document.getElementById('r_incr').value) || 0;
   const baseUSD  = getRBaseUSD();
   const trm      = S.trm || 1;
+  const baseCOP  = baseUSD * trm;
   const finalUSD = baseUSD * (1 + incr / 100);
-  const finalCOP = baseUSD * trm * (1 + incr / 100);
+  const finalCOP = baseCOP  * (1 + incr / 100);
 
-  document.getElementById('r_sumCreditos').textContent  = fmtN(bolsa);
-  document.getElementById('r_sumTarifaCOP').textContent = $COP(finalCOP);
-  document.getElementById('r_sumTarifaUSD').textContent = $USD(finalUSD);
-  document.getElementById('r_sumIncr').textContent      = '+' + incr + '%';
-  document.getElementById('r_totUSD').textContent       = $USD(bolsa * finalUSD);
-  document.getElementById('r_totCOP').textContent       = $COP(bolsa * finalCOP);
+  document.getElementById('r_ncCreditos').textContent    = fmtN(bolsa);
+  document.getElementById('r_ncTarifaAnt').textContent   = $COP(baseCOP);
+  document.getElementById('r_ncIncr').textContent        = '+' + incr + '%';
+  document.getElementById('r_ncTarifaFinal').textContent = $COP(finalCOP);
+  document.getElementById('r_totUSD').textContent        = $USD(bolsa * finalUSD);
+  document.getElementById('r_totCOP').textContent        = $COP(bolsa * finalCOP);
 }
 
 /* ══════════════════════════════════════════
@@ -1115,7 +1108,6 @@ function updateProposal() {
 function applyUSDToggle() {
   const show = document.getElementById('showUSD').checked;
   document.getElementById('proposalDisplay').classList.toggle('show-usd', show);
-  document.getElementById('r_sumTarifaUSD').style.display = show ? 'block' : 'none';
 }
 
 /* ══════════════════════════════════════════
